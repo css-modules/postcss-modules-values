@@ -13,7 +13,7 @@
     "autotest": "chokidar src test -c 'npm test'",
     "cover": "nyc mocha",
     "travis": "yarn lint && yarn cover",
-    "prepublish": "yarn test"
+    "prepublishOnly": "yarn test"
   },
   "repository": {
     "type": "git",
@@ -34,12 +34,12 @@
     "chokidar-cli": "^1.0.1",
     "codecov.io": "^0.1.2",
     "coveralls": "^3.0.2",
-    "mocha": "^5.2.0",
     "eslint": "^5.9.0",
+    "mocha": "^5.2.0",
     "nyc": "^13.1.0"
   },
   "dependencies": {
-    "icss-replace-symbols": "^1.1.0",
+    "icss-utils": "^4.0.0",
     "postcss": "^7.0.6"
   }
 }
