@@ -35,8 +35,8 @@
     "codecov.io": "^0.1.2",
     "coveralls": "^3.0.2",
     "eslint": "^5.9.0",
-    "mocha": "^5.2.0",
-    "nyc": "^13.1.0"
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.0"
   },
   "dependencies": {
     "icss-utils": "^4.0.0",

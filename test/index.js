@@ -55,7 +55,21 @@ describe('constants', () => {
     );
   });
 
-  it('should import and re-export a simple constant', () => {
+  it('should replace selectors within the file #1', () => {
+    test(
+      '@value colorValue red; #colorValue { color: colorValue; }',
+      ':export {\n  colorValue: red;\n}\n#red { color: red; }'
+    );
+  });
+
+  it('should replace selectors within the file #2', () => {
+    test(
+      '@value colorValue red; .colorValue > .colorValue { color: colorValue; }',
+      ':export {\n  colorValue: red;\n}\n.red > .red { color: red; }'
+    );
+  });
+
+  it.only('should import and re-export a simple constant', () => {
     test(
       '@value red from "./colors.css";',
       ':import("./colors.css") {\n  i__const_red_0: red\n}\n:export {\n  red: i__const_red_0\n}'
