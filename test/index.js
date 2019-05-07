@@ -48,6 +48,13 @@ describe('constants', () => {
     );
   });
 
+  it('should replace selectors within the file', () => {
+    test(
+      '@value colorValue red; .colorValue { color: colorValue; }',
+      ':export {\n  colorValue: red;\n}\n.red { color: red; }'
+    );
+  });
+
   it('should import and re-export a simple constant', () => {
     test(
       '@value red from "./colors.css";',
