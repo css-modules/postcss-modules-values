@@ -17,10 +17,9 @@ let createImportedName =
 module.exports = () => {
   return {
     postcssPlugin: "postcss-modules-values",
-    Root(root, { result }) {
+    prepare(result) {
       const importAliases = [];
       const definitions = {};
-
       const addDefinition = (atRule) => {
         let matches;
         while ((matches = matchValueDefinition.exec(atRule.params))) {
@@ -30,7 +29,6 @@ module.exports = () => {
           atRule.remove();
         }
       };
-
       const addImport = (atRule) => {
         const matches = matchImports.exec(atRule.params);
         if (matches) {
@@ -58,63 +56,67 @@ module.exports = () => {
         }
       };
 
-      /* Look at all the @value statements and treat them as locals or as imports */
-      root.walkAtRules("value", (atRule) => {
-        if (matchImports.exec(atRule.params)) {
-          addImport(atRule);
-        } else {
-          if (atRule.params.indexOf("@value") !== -1) {
-            result.warn("Invalid value definition: " + atRule.params);
+      return {
+        /* Look at all the @value statements and treat them as locals or as imports */
+        AtRule: {
+          value(atRule) {
+            if (matchImports.exec(atRule.params)) {
+              addImport(atRule);
+            } else {
+              if (atRule.params.indexOf("@value") !== -1) {
+                result.warn("Invalid value definition: " + atRule.params);
+              }
+
+              addDefinition(atRule);
+            }
+          },
+        },
+        RootExit(root) {
+          /* We want to export anything defined by now, but don't add it to the CSS yet or it well get picked up by the replacement stuff */
+          const exportDeclarations = Object.keys(definitions).map((key) =>
+            postcss.decl({
+              value: definitions[key],
+              prop: key,
+              raws: { before: "\n  " },
+            })
+          );
+
+          /* If we have no definitions, don't continue */
+          if (!Object.keys(definitions).length) {
+            return;
           }
 
-          addDefinition(atRule);
-        }
-      });
+          /* Perform replacements */
+          ICSSUtils.replaceSymbols(root, definitions);
 
-      /* We want to export anything defined by now, but don't add it to the CSS yet or
-       it well get picked up by the replacement stuff */
-      const exportDeclarations = Object.keys(definitions).map((key) =>
-        postcss.decl({
-          value: definitions[key],
-          prop: key,
-          raws: { before: "\n  " },
-        })
-      );
+          /* Add export rules if any */
+          if (exportDeclarations.length > 0) {
+            const exportRule = postcss.rule({
+              selector: ":export",
+              raws: { after: "\n" },
+            });
+            exportRule.append(exportDeclarations);
+            root.prepend(exportRule);
+          }
 
-      /* If we have no definitions, don't continue */
-      if (!Object.keys(definitions).length) {
-        return;
-      }
+          /* Add import rules */
+          importAliases.reverse().forEach(({ path, imports }) => {
+            const importRule = postcss.rule({
+              selector: `:import(${path})`,
+              raws: { after: "\n" },
+            });
+            imports.forEach(({ theirName, importedName }) => {
+              importRule.append({
+                value: theirName,
+                prop: importedName,
+                raws: { before: "\n  " },
+              });
+            });
 
-      /* Perform replacements */
-      ICSSUtils.replaceSymbols(root, definitions);
-
-      /* Add export rules if any */
-      if (exportDeclarations.length > 0) {
-        const exportRule = postcss.rule({
-          selector: ":export",
-          raws: { after: "\n" },
-        });
-        exportRule.append(exportDeclarations);
-        root.prepend(exportRule);
-      }
-
-      /* Add import rules */
-      importAliases.reverse().forEach(({ path, imports }) => {
-        const importRule = postcss.rule({
-          selector: `:import(${path})`,
-          raws: { after: "\n" },
-        });
-        imports.forEach(({ theirName, importedName }) => {
-          importRule.append({
-            value: theirName,
-            prop: importedName,
-            raws: { before: "\n  " },
+            root.prepend(importRule);
           });
-        });
-
-        root.prepend(importRule);
-      });
+        },
+      };
     },
   };
 };
