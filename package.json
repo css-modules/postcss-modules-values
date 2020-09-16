@@ -16,7 +16,7 @@
     "test": "mocha",
     "autotest": "chokidar src test -c 'npm test'",
     "cover": "nyc mocha",
-    "travis": "yarn lint && yarn cover",
+    "ci": "yarn pretest && yarn cover",
     "prepublishOnly": "yarn test"
   },
   "repository": {
