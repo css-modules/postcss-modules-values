@@ -22,8 +22,10 @@ module.exports = () => {
       const definitions = {};
       const addDefinition = (atRule) => {
         let matches;
+
         while ((matches = matchValueDefinition.exec(atRule.params))) {
           let [, /*match*/ key, value] = matches;
+
           // Add to the definitions, knowing that values can refer to each other
           definitions[key] = ICSSUtils.replaceValueSymbols(value, definitions);
           atRule.remove();
@@ -31,17 +33,21 @@ module.exports = () => {
       };
       const addImport = (atRule) => {
         const matches = matchImports.exec(atRule.params);
+
         if (matches) {
           let [, /*match*/ aliases, path] = matches;
+
           // We can use constants for path names
           if (definitions[path]) {
             path = definitions[path];
           }
+
           const imports = aliases
             .replace(/^\(\s*([\s\S]+)\s*\)$/, "$1")
             .split(/\s*,\s*/)
             .map((alias) => {
               const tokens = matchImport.exec(alias);
+
               if (tokens) {
                 const [, /*match*/ theirName, myName = theirName] = tokens;
                 const importedName = createImportedName(myName);
@@ -51,7 +57,9 @@ module.exports = () => {
                 throw new Error(`@import statement "${alias}" is invalid!`);
               }
             });
+
           importAliases.push({ path, imports });
+
           atRule.remove();
         }
       };
@@ -95,7 +103,9 @@ module.exports = () => {
               selector: ":export",
               raws: { after: "\n" },
             });
+
             exportRule.append(exportDeclarations);
+
             root.prepend(exportRule);
           }
 
@@ -105,6 +115,7 @@ module.exports = () => {
               selector: `:import(${path})`,
               raws: { after: "\n" },
             });
+
             imports.forEach(({ theirName, importedName }) => {
               importRule.append({
                 value: theirName,
