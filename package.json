@@ -12,7 +12,8 @@
   "scripts": {
     "prettier": "prettier -l --ignore-path .gitignore .",
     "eslint": "eslint --ignore-path .gitignore .",
-    "pretest": "yarn eslint && yarn prettier",
+    "lint": "yarn eslint && yarn prettier",
+    "pretest": "yarn lint",
     "test": "mocha",
     "autotest": "chokidar src test -c 'npm test'",
     "cover": "nyc mocha",
