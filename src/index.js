@@ -1,6 +1,5 @@
 "use strict";
 
-const postcss = require("postcss");
 const ICSSUtils = require("icss-utils");
 
 const matchImports = /^(.+?|\([\s\S]+?\))\s+from\s+("[^"]*"|'[^']*'|[\w-]+)$/;
@@ -79,7 +78,7 @@ module.exports = () => {
             }
           },
         },
-        RootExit(root) {
+        RootExit(root, postcss) {
           /* We want to export anything defined by now, but don't add it to the CSS yet or it well get picked up by the replacement stuff */
           const exportDeclarations = Object.keys(definitions).map((key) =>
             postcss.decl({
