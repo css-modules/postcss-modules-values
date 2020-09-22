@@ -1,15 +1,12 @@
 "use strict";
-
-/* global describe, it */
-
 const postcss = require("postcss");
-const assert = require("assert");
 
 const constants = require("../src");
 
 const test = (input, expected) => {
   const processor = postcss([constants]);
-  assert.equal(processor.process(input).css, expected);
+
+  expect(expected).toBe(processor.process(input).css);
 };
 
 describe("constants", () => {
@@ -27,9 +24,8 @@ describe("constants", () => {
     const result = processor.process(input);
     const warnings = result.warnings();
 
-    assert.equal(warnings.length, 1);
-    assert.equal(
-      warnings[0].text,
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].text).toBe(
       "Invalid value definition: red blue\n@value green yellow"
     );
   });
