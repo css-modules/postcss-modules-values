@@ -19,66 +19,78 @@ module.exports = () => {
     prepare(result) {
       const importAliases = [];
       const definitions = {};
-      const addDefinition = (atRule) => {
-        let matches;
-
-        while ((matches = matchValueDefinition.exec(atRule.params))) {
-          let [, /*match*/ key, value] = matches;
-
-          // Add to the definitions, knowing that values can refer to each other
-          definitions[key] = ICSSUtils.replaceValueSymbols(value, definitions);
-          atRule.remove();
-        }
-      };
-      const addImport = (atRule) => {
-        const matches = matchImports.exec(atRule.params);
-
-        if (matches) {
-          let [, /*match*/ aliases, path] = matches;
-
-          // We can use constants for path names
-          if (definitions[path]) {
-            path = definitions[path];
-          }
-
-          const imports = aliases
-            .replace(/^\(\s*([\s\S]+)\s*\)$/, "$1")
-            .split(/\s*,\s*/)
-            .map((alias) => {
-              const tokens = matchImport.exec(alias);
-
-              if (tokens) {
-                const [, /*match*/ theirName, myName = theirName] = tokens;
-                const importedName = createImportedName(myName);
-                definitions[myName] = importedName;
-                return { theirName, importedName };
-              } else {
-                throw new Error(`@import statement "${alias}" is invalid!`);
-              }
-            });
-
-          importAliases.push({ path, imports });
-
-          atRule.remove();
-        }
-      };
 
       return {
         /* Look at all the @value statements and treat them as locals or as imports */
         AtRule: {
           value(atRule) {
             if (matchImports.exec(atRule.params)) {
-              addImport(atRule);
+              const matches = matchImports.exec(atRule.params);
+
+              if (matches) {
+                let [, /*match*/ aliases, path] = matches;
+
+                // We can use constants for path names
+                if (definitions[path]) {
+                  path = definitions[path];
+                }
+
+                const imports = aliases
+                  .replace(/^\(\s*([\s\S]+)\s*\)$/, "$1")
+                  .split(/\s*,\s*/)
+                  .map((alias) => {
+                    const tokens = matchImport.exec(alias);
+
+                    if (tokens) {
+                      const [
+                        ,
+                        /*match*/ theirName,
+                        myName = theirName,
+                      ] = tokens;
+                      const importedName = createImportedName(myName);
+                      definitions[myName] = importedName;
+                      return { theirName, importedName };
+                    } else {
+                      throw new Error(
+                        `@import statement "${alias}" is invalid!`
+                      );
+                    }
+                  });
+
+                importAliases.push({ path, imports });
+
+                atRule.remove();
+              }
             } else {
               if (atRule.params.indexOf("@value") !== -1) {
                 result.warn("Invalid value definition: " + atRule.params);
               }
 
-              addDefinition(atRule);
+              let matches;
+
+              while ((matches = matchValueDefinition.exec(atRule.params))) {
+                let [, /*match*/ key, value] = matches;
+
+                // Add to the definitions, knowing that values can refer to each other
+                definitions[key] = ICSSUtils.replaceValueSymbols(
+                  value,
+                  definitions
+                );
+
+                atRule.remove();
+              }
             }
           },
         },
-        RootExit(root, postcss) {
+        OnceExit(root, postcss) {
+          /* If we have no definitions, don't continue */
+          if (!Object.keys(definitions).length) {
+            return;
+          }
+
+          /* Perform replacements */
+          ICSSUtils.replaceSymbols(root, definitions);
+
           /* We want to export anything defined by now, but don't add it to the CSS yet or it well get picked up by the replacement stuff */
           const exportDeclarations = Object.keys(definitions).map((key) =>
             postcss.decl({
@@ -87,14 +99,6 @@ module.exports = () => {
               raws: { before: "\n  " },
             })
           );
-
-          /* If we have no definitions, don't continue */
-          if (!Object.keys(definitions).length) {
-            return;
-          }
-
-          /* Perform replacements */
-          ICSSUtils.replaceSymbols(root, definitions);
 
           /* Add export rules if any */
           if (exportDeclarations.length > 0) {
