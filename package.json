@@ -1,13 +1,13 @@
 {
   "name": "postcss-modules-values",
-  "version": "4.0.0-rc.2",
+  "version": "4.0.0-rc.3",
   "description": "PostCSS plugin for CSS Modules to pass arbitrary values between your module files",
   "main": "src/index.js",
   "files": [
     "src"
   ],
   "engines": {
-    "node": ">= 10.13.0 || >= 12.13.0 || >= 14"
+    "node": "^10 || ^12 || >= 14"
   },
   "scripts": {
     "prettier": "prettier -l --ignore-path .gitignore .",
