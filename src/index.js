@@ -8,7 +8,7 @@ const matchImport = /^([\w-]+)(?:\s+as\s+([\w-]+))?/;
 
 module.exports = (options) => {
   let importIndex = 0;
-  let createImportedName =
+  const createImportedName =
     (options && options.createImportedName) ||
     ((importName /*, path*/) =>
       `i__const_${importName.replace(/\W/g, "_")}_${importIndex++}`);
