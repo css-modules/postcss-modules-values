@@ -1,6 +1,6 @@
 {
   "name": "postcss-modules-values",
-  "version": "4.0.0-rc.3",
+  "version": "4.0.0-rc.4",
   "description": "PostCSS plugin for CSS Modules to pass arbitrary values between your module files",
   "main": "src/index.js",
   "files": [

@@ -3,17 +3,16 @@
 const ICSSUtils = require("icss-utils");
 
 const matchImports = /^(.+?|\([\s\S]+?\))\s+from\s+("[^"]*"|'[^']*'|[\w-]+)$/;
-const matchValueDefinition = /(?:\s+|^)([\w-]+):?\s+(.+?)\s*$/g;
+const matchValueDefinition = /(?:\s+|^)([\w-]+):?(.*?)$/;
 const matchImport = /^([\w-]+)(?:\s+as\s+([\w-]+))?/;
 
-let options = {};
-let importIndex = 0;
-let createImportedName =
-  (options && options.createImportedName) ||
-  ((importName /*, path*/) =>
-    `i__const_${importName.replace(/\W/g, "_")}_${importIndex++}`);
+module.exports = (options) => {
+  let importIndex = 0;
+  let createImportedName =
+    (options && options.createImportedName) ||
+    ((importName /*, path*/) =>
+      `i__const_${importName.replace(/\W/g, "_")}_${importIndex++}`);
 
-module.exports = () => {
   return {
     postcssPlugin: "postcss-modules-values",
     prepare(result) {
@@ -21,65 +20,72 @@ module.exports = () => {
       const definitions = {};
 
       return {
-        /* Look at all the @value statements and treat them as locals or as imports */
         AtRule: {
           value(atRule) {
-            if (matchImports.exec(atRule.params)) {
-              const matches = matchImports.exec(atRule.params);
+            const matches = atRule.params.match(matchImports);
 
-              if (matches) {
-                let [, /*match*/ aliases, path] = matches;
+            if (matches) {
+              let [, /*match*/ aliases, path] = matches;
 
-                // We can use constants for path names
-                if (definitions[path]) {
-                  path = definitions[path];
-                }
-
-                const imports = aliases
-                  .replace(/^\(\s*([\s\S]+)\s*\)$/, "$1")
-                  .split(/\s*,\s*/)
-                  .map((alias) => {
-                    const tokens = matchImport.exec(alias);
-
-                    if (tokens) {
-                      const [
-                        ,
-                        /*match*/ theirName,
-                        myName = theirName,
-                      ] = tokens;
-                      const importedName = createImportedName(myName);
-                      definitions[myName] = importedName;
-                      return { theirName, importedName };
-                    } else {
-                      throw new Error(
-                        `@import statement "${alias}" is invalid!`
-                      );
-                    }
-                  });
-
-                importAliases.push({ path, imports });
-
-                atRule.remove();
-              }
-            } else {
-              if (atRule.params.indexOf("@value") !== -1) {
-                result.warn("Invalid value definition: " + atRule.params);
+              // We can use constants for path names
+              if (definitions[path]) {
+                path = definitions[path];
               }
 
-              let matches;
+              const imports = aliases
+                .replace(/^\(\s*([\s\S]+)\s*\)$/, "$1")
+                .split(/\s*,\s*/)
+                .map((alias) => {
+                  const tokens = matchImport.exec(alias);
 
-              while ((matches = matchValueDefinition.exec(atRule.params))) {
-                let [, /*match*/ key, value] = matches;
+                  if (tokens) {
+                    const [, /*match*/ theirName, myName = theirName] = tokens;
+                    const importedName = createImportedName(myName);
+                    definitions[myName] = importedName;
+                    return { theirName, importedName };
+                  } else {
+                    throw new Error(`@import statement "${alias}" is invalid!`);
+                  }
+                });
 
-                // Add to the definitions, knowing that values can refer to each other
-                definitions[key] = ICSSUtils.replaceValueSymbols(
-                  value,
-                  definitions
-                );
+              importAliases.push({ path, imports });
 
-                atRule.remove();
-              }
+              atRule.remove();
+
+              return;
             }
+
+            if (atRule.params.indexOf("@value") !== -1) {
+              result.warn("Invalid value definition: " + atRule.params);
+            }
+
+            let [, key, value] = `${atRule.params}${atRule.raws.between}`.match(
+              matchValueDefinition
+            );
+
+            const normalizedValue = value.replace(/\/\*((?!\*\/).*?)\*\//g, "");
+
+            if (normalizedValue.length === 0) {
+              result.warn("Invalid value definition: " + atRule.params);
+
+              atRule.remove();
+
+              return;
+            }
+
+            let isOnlySpace = /^\s+$/.test(normalizedValue);
+
+            if (!isOnlySpace) {
+              value = value.trim();
+            }
+
+            // Add to the definitions, knowing that values can refer to each other
+            definitions[key] = ICSSUtils.replaceValueSymbols(
+              value,
+              definitions
+            );
+
+            atRule.remove();
           },
         },
         OnceExit(root, postcss) {
