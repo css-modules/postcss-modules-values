@@ -20,8 +20,8 @@ module.exports = (options) => {
       const definitions = {};
 
       return {
-        AtRule: {
-          value(atRule) {
+        OnceExit(root, postcss) {
+          root.walkAtRules(/value/i, (atRule) => {
             const matches = atRule.params.match(matchImports);
 
             if (matches) {
@@ -67,7 +67,6 @@ module.exports = (options) => {
 
             if (normalizedValue.length === 0) {
               result.warn("Invalid value definition: " + atRule.params);
-
               atRule.remove();
 
               return;
@@ -86,9 +85,8 @@ module.exports = (options) => {
             );
 
             atRule.remove();
-          },
-        },
-        OnceExit(root, postcss) {
+          });
+
           /* If we have no definitions, don't continue */
           if (!Object.keys(definitions).length) {
             return;

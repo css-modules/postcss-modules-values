@@ -1,6 +1,6 @@
 {
   "name": "postcss-modules-values",
-  "version": "4.0.0-rc.4",
+  "version": "4.0.0-rc.5",
   "description": "PostCSS plugin for CSS Modules to pass arbitrary values between your module files",
   "main": "src/index.js",
   "files": [
@@ -38,6 +38,7 @@
   "devDependencies": {
     "coveralls": "^3.1.0",
     "eslint": "^7.10.0",
+    "eslint-config-prettier": "^6.12.0",
     "husky": "^4.3.0",
     "jest": "^26.5.2",
     "lint-staged": "^10.4.0",
