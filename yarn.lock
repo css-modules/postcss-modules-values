@@ -1872,10 +1872,10 @@ iconv-lite@0.4.24:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
-icss-utils@^5.0.0-rc.0:
-  version "5.0.0-rc.0"
-  resolved "https://registry.yarnpkg.com/icss-utils/-/icss-utils-5.0.0-rc.0.tgz#c72082bd0edaa2cd85b25bfe98db2e49be8d4306"
-  integrity sha512-iTcLOd8eGcKQBusS3SRQYCK324r6Aov3GlfWRbRYC9oAp93v1qm7kBWB0WeEjZ3rGoOvymTkQUhOiTokNz9mKg==
+icss-utils@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/icss-utils/-/icss-utils-5.0.0.tgz#03ed56c3accd32f9caaf1752ebf64ef12347bb84"
+  integrity sha512-aF2Cf/CkEZrI/vsu5WI/I+akFgdbwQHVE9YRZxATrhH4PVIe6a3BIjwjEcW+z+jP/hNh+YvM3lAAn1wJQ6opSg==
 
 ignore@^4.0.6:
   version "4.0.6"

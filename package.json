@@ -1,6 +1,6 @@
 {
   "name": "postcss-modules-values",
-  "version": "4.0.0-rc.5",
+  "version": "4.0.0",
   "description": "PostCSS plugin for CSS Modules to pass arbitrary values between your module files",
   "main": "src/index.js",
   "files": [
@@ -46,7 +46,7 @@
     "prettier": "^2.1.2"
   },
   "dependencies": {
-    "icss-utils": "^5.0.0-rc.0"
+    "icss-utils": "^5.0.0"
   },
   "peerDependencies": {
     "postcss": "^8.1.0"

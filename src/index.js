@@ -20,7 +20,7 @@ module.exports = (options) => {
       const definitions = {};
 
       return {
-        OnceExit(root, postcss) {
+        Once(root, postcss) {
           root.walkAtRules(/value/i, (atRule) => {
             const matches = atRule.params.match(matchImports);
 
