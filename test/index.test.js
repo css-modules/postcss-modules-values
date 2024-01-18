@@ -62,6 +62,24 @@ describe("constants", () => {
       ":export {\n  blue: red;\n}\n.foo { color: red; }"
     ));
 
+  it("should replace constants within the file #1", () =>
+    test(
+      "@value blue: red; .foo { &.bar { color: blue; } }",
+      ":export {\n  blue: red;\n} .foo { &.bar { color: red; } }"
+    ));
+
+  it("should replace constants within the file #2", () =>
+    test(
+      "@value blue: red; .foo { @media (min-width: 1024px) { &.bar { color: blue; } } }",
+      ":export {\n  blue: red;\n} .foo { @media (min-width: 1024px) { &.bar { color: red; } } }"
+    ));
+
+  it("should replace constants within the file #3", () =>
+    test(
+      "@value blue: red; .foo { @media (min-width: 1024px) { &.bar { @media (min-width: 1024px) { color: blue; } } } }",
+      ":export {\n  blue: red;\n} .foo { @media (min-width: 1024px) { &.bar { @media (min-width: 1024px) { color: red; } } } }"
+    ));
+
   it("should replace selectors within the file", () =>
     test(
       "@value colorValue: red; .colorValue { color: colorValue; }",
