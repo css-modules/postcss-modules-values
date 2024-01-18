@@ -80,6 +80,12 @@ describe("constants", () => {
       ":export {\n  blue: red;\n} .foo { @media (min-width: 1024px) { &.bar { @media (min-width: 1024px) { color: red; } } } }"
     ));
 
+  it("should replace constants within the file #4", () =>
+    test(
+      "@value test-t: 40px;\n@value test_q: 36px; .foo { height: test-t; height: test_q; }",
+      ":export {\n  test-t: 40px;\n  test_q: 36px;\n}\n.foo { height: 40px; height: 36px; }"
+    ));
+
   it("should replace selectors within the file", () =>
     test(
       "@value colorValue: red; .colorValue { color: colorValue; }",
